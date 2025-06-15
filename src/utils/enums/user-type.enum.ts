@@ -1,0 +1,4 @@
+export enum UserType {
+  PHOTOGRAPHER = 'PHOTOGRAPHER',
+  CUSTOMER = 'CUSTOMER',
+}
