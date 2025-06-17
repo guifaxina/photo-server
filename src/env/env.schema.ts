@@ -5,4 +5,7 @@ export const envSchema = z.object({
   POSTGRES_PASSWORD: z.string(),
   POSTGRES_DB: z.string(),
   DATABASE_URL: z.string(),
+  JWT_SECRET: z.string(),
 });
+
+export type EnvVariables = z.infer<typeof envSchema>;
