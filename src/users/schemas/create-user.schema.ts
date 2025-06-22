@@ -1,4 +1,4 @@
-import { UserType } from 'src/utils/enums/user-type.enum';
+import { UserRole } from 'src/utils/enums/user-type.enum';
 import { z } from 'zod';
 
 export const createUserSchema = z
@@ -6,7 +6,7 @@ export const createUserSchema = z
     name: z.string(),
     email: z.string().email(),
     password: z.string(),
-    role: z.nativeEnum(UserType),
+    role: z.nativeEnum(UserRole),
   })
   .strict();
 
