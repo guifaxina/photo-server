@@ -8,7 +8,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  register(@Body(new ZodPipe(createUserSchema)) createUser: TCreateUser) {
-    return this.usersService.register(createUser);
+  async register(@Body(new ZodPipe(createUserSchema)) createUser: TCreateUser) {
+    return await this.usersService.register(createUser);
   }
 }

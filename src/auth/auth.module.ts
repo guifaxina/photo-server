@@ -14,7 +14,7 @@ import { configService } from 'src/env/env.config';
     JwtModule.register({
       secret: configService.get('JWT_SECRET'),
       signOptions: {
-        expiresIn: '30d',
+        expiresIn: '7d',
       },
     }),
   ],

@@ -4,7 +4,7 @@ import { ZodFilter } from './exceptions/zod-exception.filter';
 import { PrismaClientExceptionFilter } from './exceptions/prisma-client-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new ZodFilter(), new PrismaClientExceptionFilter());
   await app.listen(process.env.PORT ?? 3000);
