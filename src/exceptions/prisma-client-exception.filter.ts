@@ -19,7 +19,7 @@ export class PrismaClientExceptionFilter<T> implements ExceptionFilter {
         const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,
-          message: message,
+          message: message ?? 'Conflito, o registro já existe.',
         });
         break;
       }
@@ -27,12 +27,14 @@ export class PrismaClientExceptionFilter<T> implements ExceptionFilter {
         const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           statusCode: status,
-          message: message,
+          message: message ?? 'Não foi possível encontrar o registro.',
         });
         break;
       }
       default:
-        throw new InternalServerErrorException(message);
+        throw new InternalServerErrorException(
+          'Oops! Ocorreu um erro interno, tente novamente mais tarde.',
+        );
     }
   }
 }

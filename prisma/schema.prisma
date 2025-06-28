@@ -22,8 +22,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   role      Roles    @default(CUSTOMER)
+  Photo     Photo[]
 
   @@map("users")
+}
+
+model Photo {
+  id             Int      @id @default(autoincrement())
+  uuid           String   @unique @default(uuid()) @db.Uuid
+  key            String
+  url            String
+  photographerId Int
+  description    String?
+  isMain         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  photographer User @relation(fields: [photographerId], references: [id])
+
+  @@map("photos")
 }
 
 enum Roles {
