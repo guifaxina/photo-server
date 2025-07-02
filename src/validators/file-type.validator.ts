@@ -14,6 +14,9 @@ export class MimeTypeValidator extends FileValidator<{ mimeTypes: string[] }> {
   }
 
   buildErrorMessage(file: Express.Multer.File): string {
-    return this.validationOptions.message ?? 'Tipo de arquivo inválido';
+    return (
+      this.validationOptions.message ??
+      `${file.mimetype} é um tipo de arquivo inválido`
+    );
   }
 }

@@ -35,10 +35,13 @@ model Photo {
   photographerId Int
   description    String?
   isMain         Boolean  @default(false)
+  mainPhotoId    Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  photographer User @relation(fields: [photographerId], references: [id])
+  photographer     User    @relation(fields: [photographerId], references: [id])
+  mainPhoto        Photo?  @relation("relationMainPhoto", fields: [mainPhotoId], references: [id])
+  vinculatedPhotos Photo[] @relation("relationMainPhoto")
 
   @@map("photos")
 }

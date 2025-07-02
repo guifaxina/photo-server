@@ -4,11 +4,14 @@ import {
   ExceptionFilter,
   HttpStatus,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter<T> implements ExceptionFilter {
+  private readonly logger = new Logger(PrismaClientExceptionFilter.name);
+
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -19,16 +22,18 @@ export class PrismaClientExceptionFilter<T> implements ExceptionFilter {
         const status = HttpStatus.CONFLICT;
         response.status(status).json({
           statusCode: status,
-          message: message ?? 'Conflito, o registro já existe.',
+          message: 'Conflito, o registro já existe.',
         });
+        this.logger.error(message);
         break;
       }
       case 'P2025': {
         const status = HttpStatus.NOT_FOUND;
         response.status(status).json({
           statusCode: status,
-          message: message ?? 'Não foi possível encontrar o registro.',
+          message: 'Não foi possível encontrar o registro.',
         });
+        this.logger.error(message);
         break;
       }
       default:

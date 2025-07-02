@@ -1,8 +1,7 @@
 import {
+  BadRequestException,
   Controller,
-  FileTypeValidator,
   Get,
-  MaxFileSizeValidator,
   ParseFilePipe,
   Post,
   UploadedFiles,
@@ -11,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { StorageService } from './storage.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { fileValidators } from 'src/validators/file-validators';
 import { CurrentUser } from 'src/decorators/user.decorator';
 import { AuthUser } from '../users/types';
@@ -27,18 +26,38 @@ export class StorageController {
   @Get('list')
   async list() {}
 
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'files' },
+      { name: 'fileMain', maxCount: 1 },
+    ]),
+  )
   @Post('upload')
   @Roles(UserRole.PHOTOGRAPHER)
   async upload(
     @CurrentUser() user: AuthUser,
-    @UploadedFiles(
-      new ParseFilePipe({
-        validators: fileValidators,
-      }),
-    )
-    files: Express.Multer.File[],
+    @UploadedFiles()
+    {
+      files,
+      fileMain,
+    }: { files: Express.Multer.File[]; fileMain: Express.Multer.File[] },
   ) {
-    return await this.storageService.upload(files, user);
+    const filesPipe = new ParseFilePipe({ validators: fileValidators });
+
+    for (const file of [...files, ...fileMain]) {
+      try {
+        await filesPipe.transform(file);
+      } catch (error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+
+    return await this.storageService.upload(
+      [
+        ...files.map((file) => ({ file, isMain: false })),
+        ...fileMain.map((file) => ({ file, isMain: true })),
+      ],
+      user,
+    );
   }
 }

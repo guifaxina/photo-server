@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { S3_PROVIDER } from './s3.provider';
 import {
   PutObjectCommandInput,
@@ -23,33 +19,58 @@ export class StorageService {
     private readonly usersService: UsersService,
   ) {}
 
-  async upload(files: Express.Multer.File[], user: AuthUser) {
+  async upload(
+    allFiles: { file: Express.Multer.File; isMain: boolean }[],
+    user: AuthUser,
+  ) {
+    const mainPhoto = allFiles.find((obj) => obj.isMain);
+    const mainUpload = await this.uploadPhotos([mainPhoto.file], user, true);
+    const createdMainPhoto = await mainUpload[0];
+
+    const filesWithoutMain = allFiles
+      .filter((obj) => !obj.isMain)
+      .map((obj) => obj.file);
+
+    const uploads = await this.uploadPhotos(
+      filesWithoutMain,
+      user,
+      false,
+      createdMainPhoto.id,
+    );
+
+    await Promise.all(uploads);
+  }
+
+  async uploadPhotos(
+    files: Express.Multer.File[],
+    user: AuthUser,
+    isMain = false,
+    mainPhotoId?: number,
+  ) {
     const uploads = files.map(async (file) => {
       const uuid = randomUUID();
 
-      const params: PutObjectCommandInput = {
-        Bucket: configService.get('R2_BUCKET'),
-        Key: uuid,
-        Body: file.buffer,
-      };
-      const command = new PutObjectCommand(params);
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: configService.get('R2_BUCKET'),
+          Key: uuid,
+          Body: file.buffer,
+        }),
+      );
 
-      try {
-        await this.s3.send(command);
-        const photographer = await this.usersService.findByEmail(user.email);
+      const photographer = await this.usersService.findByEmail(user.email);
 
-        return this.prismaService.photo.create({
-          data: {
-            photographerId: photographer.id,
-            key: uuid,
-            url: configService.get('R2_PUBLIC_URL') + uuid,
-          },
-        });
-      } catch {
-        throw new InternalServerErrorException();
-      }
+      return this.prismaService.photo.create({
+        data: {
+          photographerId: photographer.id,
+          key: uuid,
+          url: configService.get('R2_PUBLIC_URL') + uuid,
+          isMain,
+          mainPhotoId,
+        },
+      });
     });
 
-    await Promise.all(uploads);
+    return uploads;
   }
 }
