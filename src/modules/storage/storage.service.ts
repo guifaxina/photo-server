@@ -1,15 +1,12 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { S3_PROVIDER } from './s3.provider';
-import {
-  PutObjectCommandInput,
-  S3Client,
-  PutObjectCommand,
-} from '@aws-sdk/client-s3';
-import { configService } from 'src/env/env.config';
-import { PrismaService } from 'prisma/prisma.service';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { PrismaService } from 'prisma/prisma.service';
+import { configService } from 'src/env/env.config';
 import { AuthUser } from '../users/types';
 import { UsersService } from '../users/users.service';
+import { S3_PROVIDER } from './s3.provider';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StorageService {
@@ -24,8 +21,16 @@ export class StorageService {
     user: AuthUser,
   ) {
     const mainPhoto = allFiles.find((obj) => obj.isMain);
-    const mainUpload = await this.uploadPhotos([mainPhoto.file], user, true);
-    const createdMainPhoto = await mainUpload[0];
+    if (!mainPhoto) {
+      throw new Error('Foto principal não encontrada');
+    }
+
+    const mainUploadPromises = await this.uploadPhotos(
+      [mainPhoto.file],
+      user,
+      true,
+    );
+    const [createdMainPhoto] = await Promise.all(mainUploadPromises);
 
     const filesWithoutMain = allFiles
       .filter((obj) => !obj.isMain)
@@ -62,11 +67,22 @@ export class StorageService {
 
       return this.prismaService.photo.create({
         data: {
-          photographerId: photographer.id,
           key: uuid,
           url: configService.get('R2_PUBLIC_URL') + uuid,
           isMain,
-          mainPhotoId,
+          ...(mainPhotoId && {
+            mainPhoto: {
+              connect: {
+                id: mainPhotoId,
+              },
+            },
+          }),
+          price: new Prisma.Decimal(0.0),
+          photographer: {
+            connect: {
+              id: photographer.id,
+            },
+          },
         },
       });
     });
