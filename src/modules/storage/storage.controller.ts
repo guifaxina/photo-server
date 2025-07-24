@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   ParseFilePipe,
@@ -17,6 +18,8 @@ import { AuthUser } from '../users/types';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from 'src/utils/enums/user-type.enum';
+import { UploadPhotoDto, uploadPhotoSchema } from './dto/upload-photo.dto';
+import { ZodPipe } from 'src/pipes/zod.pipe';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('storage')
@@ -38,10 +41,21 @@ export class StorageController {
     @CurrentUser() user: AuthUser,
     @UploadedFiles()
     {
-      files,
-      fileMain,
-    }: { files: Express.Multer.File[]; fileMain: Express.Multer.File[] },
+      files = [],
+      fileMain = [],
+    }: { files?: Express.Multer.File[]; fileMain?: Express.Multer.File[] },
+    @Body(new ZodPipe(uploadPhotoSchema)) uploadPhotoDto: UploadPhotoDto,
   ) {
+    if (fileMain.length === 0 && files.length === 0) {
+      throw new BadRequestException(
+        'Pelo menos um arquivo de imagem deve ser enviado.',
+      );
+    }
+
+    if (fileMain.length > 1) {
+      throw new BadRequestException('Apenas um arquivo principal é permitido.');
+    }
+
     const filesPipe = new ParseFilePipe({ validators: fileValidators });
 
     for (const file of [...files, ...fileMain]) {
@@ -58,6 +72,8 @@ export class StorageController {
         ...fileMain.map((file) => ({ file, isMain: true })),
       ],
       user,
+      uploadPhotoDto.description,
+      uploadPhotoDto.price,
     );
   }
 }

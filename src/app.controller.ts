@@ -4,6 +4,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicUser } from './modules/users/types';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Public } from './decorators/public.decorator';
 
 @Controller()
 export class AppController {
@@ -12,6 +13,7 @@ export class AppController {
     private readonly authService: AuthService,
   ) {}
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   async login(@Request() req: Request & { user: PublicUser }) {

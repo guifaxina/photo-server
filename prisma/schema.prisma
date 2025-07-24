@@ -25,6 +25,13 @@ model User {
   Photo     Photo[]
   cart      Cart?
   orders    Order[]
+  location         String?
+  bio              String?
+  specialties      String[] @default([])
+  rating           Float?   @default(0.0)
+  reviewCount      Int?     @default(0)
+  portfolioCount   Int?     @default(0)
+  profileImage     String?
 
   @@map("users")
 }

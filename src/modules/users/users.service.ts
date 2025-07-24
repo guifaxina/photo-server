@@ -1,8 +1,12 @@
-import { Prisma } from '@prisma/client';
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'prisma/prisma.service';
 import { TCreateUser } from './schemas/create-user.schema';
-import * as bcrypt from 'bcrypt';
+import { Roles } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +32,13 @@ export class UsersService {
         email: data.email,
         password: hashedPassword,
         role: data.role,
+        location: data.location,
+        bio: data.bio,
+        specialties: data.specialties,
+        rating: data.rating,
+        reviewCount: data.reviewCount,
+        portfolioCount: data.portfolioCount,
+        profileImage: data.profileImage,
       },
     });
   }
@@ -35,6 +46,51 @@ export class UsersService {
   async findByEmail(email: string) {
     return await this.prismaService.user.findUniqueOrThrow({
       where: { email: email },
+    });
+  }
+
+  async findByUuid(uuid: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { uuid: uuid },
+      select: {
+        id: true,
+        uuid: true,
+        name: true,
+        email: true,
+        role: true,
+        location: true,
+        bio: true,
+        specialties: true,
+        rating: true,
+        reviewCount: true,
+        portfolioCount: true,
+        profileImage: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+    return user;
+  }
+
+  async findAllPhotographers() {
+    return await this.prismaService.user.findMany({
+      where: {
+        role: Roles.PHOTOGRAPHER,
+      },
+      select: {
+        uuid: true,
+        name: true,
+        email: true,
+        location: true,
+        bio: true,
+        specialties: true,
+        rating: true,
+        reviewCount: true,
+        portfolioCount: true,
+        profileImage: true,
+      },
     });
   }
 }

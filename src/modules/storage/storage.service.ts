@@ -19,6 +19,8 @@ export class StorageService {
   async upload(
     allFiles: { file: Express.Multer.File; isMain: boolean }[],
     user: AuthUser,
+    description?: string,
+    price?: number,
   ) {
     const mainPhoto = allFiles.find((obj) => obj.isMain);
     if (!mainPhoto) {
@@ -41,6 +43,8 @@ export class StorageService {
       user,
       false,
       createdMainPhoto.id,
+      description,
+      price,
     );
 
     await Promise.all(uploads);
@@ -51,6 +55,8 @@ export class StorageService {
     user: AuthUser,
     isMain = false,
     mainPhotoId?: number,
+    description?: string,
+    price?: number,
   ) {
     const uploads = files.map(async (file) => {
       const uuid = randomUUID();
@@ -77,7 +83,8 @@ export class StorageService {
               },
             },
           }),
-          price: new Prisma.Decimal(0.0),
+          description,
+          price: new Prisma.Decimal(price || 0.0),
           photographer: {
             connect: {
               id: photographer.id,
