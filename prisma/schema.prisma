@@ -23,6 +23,15 @@ model User {
   updatedAt DateTime @updatedAt
   role      Roles    @default(CUSTOMER)
   Photo     Photo[]
+  cart      Cart?
+  orders    Order[]
+  location         String?
+  bio              String?
+  specialties      String[] @default([])
+  rating           Float?   @default(0.0)
+  reviewCount      Int?     @default(0)
+  portfolioCount   Int?     @default(0)
+  profileImage     String?
 
   @@map("users")
 }
@@ -38,15 +47,87 @@ model Photo {
   mainPhotoId    Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  price          Decimal     @db.Decimal(10, 2)
 
-  photographer     User    @relation(fields: [photographerId], references: [id])
+photographer     User    @relation(fields: [photographerId], references: [id])
   mainPhoto        Photo?  @relation("relationMainPhoto", fields: [mainPhotoId], references: [id])
   vinculatedPhotos Photo[] @relation("relationMainPhoto")
 
+  cartItems        CartItem[] 
+  orderItems       OrderItem[]
+
   @@map("photos")
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @db.Uuid
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid()) @db.Uuid
+  cartId          Int
+  photoId         Int
+  priceAtAddition Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cart            Cart     @relation(fields: [cartId], references: [id])
+  photo           Photo    @relation(fields: [photoId], references: [id])
+
+  @@map("cart_items")
+}
+
+model Order {
+  id                   Int         @id @default(autoincrement())
+  uuid                 String      @unique @default(uuid()) @db.Uuid
+  userId               Int
+  totalAmount          Decimal     @db.Decimal(10, 2)
+  systemFee            Decimal     @db.Decimal(10, 2)
+  photographerEarnings Decimal     @db.Decimal(10, 2)
+  status               OrderStatus @default(PENDING)
+  paymentDetails       Json?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  user                 User        @relation(fields: [userId], references: [id])
+  items                OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid()) @db.Uuid
+  orderId         Int
+  photoId         Int
+  priceAtPurchase Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  order           Order    @relation(fields: [orderId], references: [id])
+  photo           Photo    @relation(fields: [photoId], references: [id])
+
+  @@map("order_items")
 }
 
 enum Roles {
   PHOTOGRAPHER
   CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

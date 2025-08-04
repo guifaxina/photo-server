@@ -6,6 +6,8 @@ import { UsersModule } from './modules/users/users.module';
 import { envSchema, EnvVariables } from './env/env.schema';
 import { AuthModule } from './auth/auth.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { CartModule } from './modules/cart/cart.module';
+import { PhotosModule } from './modules/photos/photos.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { StorageModule } from './modules/storage/storage.module';
     UsersModule,
     AuthModule,
     StorageModule,
+    CartModule,
+    PhotosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
