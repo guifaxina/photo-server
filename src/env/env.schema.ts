@@ -12,6 +12,7 @@ export const envSchema = z.object({
   R2_BUCKET: z.string(),
   R2_PUBLIC_URL: z.string(),
   POSTGRES_PORT: z.string().default('5432'),
+  STRIPE_SECRET_KEY: z.string(),
 });
 
 export type EnvVariables = z.infer<typeof envSchema>;
