@@ -15,8 +15,5 @@ export class UploadPhotoDto {
 
 export const uploadPhotoSchema = z.object({
   description: z.string().optional(),
-  price: z.preprocess(
-    (a) => parseFloat(z.string().parse(a)),
-    z.number().min(0, 'O preço não pode ser negativo.'),
-  ),
+  price: z.number().min(0, 'O preço não pode ser negativo.'),
 });
