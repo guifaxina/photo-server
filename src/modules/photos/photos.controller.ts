@@ -1,15 +1,24 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { PhotosService } from './photos.service';
 import { Public } from 'src/decorators/public.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
   @Public()
-  @Get()
-  async findAll() {
-    return this.photosService.findAllPhotos();
+  @Post('find-all')
+  @UseInterceptors(FileInterceptor('file'))
+  async findAll(@UploadedFile() photoSearch?: Express.Multer.File) {
+    return await this.photosService.findAllPhotos(photoSearch);
   }
 
   @Public()

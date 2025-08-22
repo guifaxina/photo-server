@@ -73,16 +73,13 @@ export class StorageService {
 
       const photographer = await this.usersService.findByEmail(user.email);
 
-      const descriptor = await this.recognitionService.extractDescriptor(
+      const descriptor = (await this.recognitionService.extractDescriptor(
         file.buffer,
-      );
-
-      const descriptorToJson = descriptor
-        ? JSON.parse(JSON.stringify(descriptor))
-        : undefined;
+      )) as Prisma.JsonArray;
 
       return this.prismaService.photo.create({
         data: {
+          descriptor,
           key: uuid,
           url: configService.get('R2_PUBLIC_URL') + uuid,
           isMain,
@@ -95,7 +92,6 @@ export class StorageService {
           }),
           description,
           price: new Prisma.Decimal(price || 0.0),
-          descriptor: descriptorToJson,
           photographer: {
             connect: {
               id: photographer.id,

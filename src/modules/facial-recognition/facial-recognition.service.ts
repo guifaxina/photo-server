@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as faceapi from 'face-api.js';
 import * as canvas from 'canvas';
@@ -50,7 +51,11 @@ export class FacialRecognitionService {
 
     const result = await this.extractDescriptor(file.buffer);
 
-    console.log(result);
+    if (!result) {
+      throw new InternalServerErrorException('No face detected');
+    }
+
+    return result;
   }
 
   async extractDescriptor(imageBuffer: Buffer): Promise<number[] | void> {
@@ -70,5 +75,35 @@ export class FacialRecognitionService {
     }
 
     return Array.from(detection.descriptor);
+  }
+
+  async findMatchingFaces(
+    photoSearchDescriptor: number[],
+    threshold = 0.45,
+  ): Promise<string[]> {
+    const descriptors = await this.prismaService.photo.findMany({
+      where: {
+        descriptor: { not: Prisma.DbNull },
+      },
+      select: {
+        url: true,
+        descriptor: true,
+      },
+    });
+
+    const urlMatches: string[] = [];
+
+    for (const descriptor of descriptors) {
+      const distance = faceapi.euclideanDistance(
+        descriptor.descriptor as number[],
+        photoSearchDescriptor,
+      );
+
+      if (distance < threshold) {
+        urlMatches.push(descriptor.url);
+      }
+    }
+
+    return urlMatches;
   }
 }
