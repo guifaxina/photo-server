@@ -7,6 +7,7 @@ import { AuthUser } from '../users/types';
 import { UsersService } from '../users/users.service';
 import { S3_PROVIDER } from './s3.provider';
 import { Prisma } from '@prisma/client';
+import { FacialRecognitionService } from '../facial-recognition/facial-recognition.service';
 
 @Injectable()
 export class StorageService {
@@ -14,6 +15,7 @@ export class StorageService {
     @Inject(S3_PROVIDER) private readonly s3: S3Client,
     private readonly prismaService: PrismaService,
     private readonly usersService: UsersService,
+    private readonly recognitionService: FacialRecognitionService,
   ) {}
 
   async upload(
@@ -71,8 +73,13 @@ export class StorageService {
 
       const photographer = await this.usersService.findByEmail(user.email);
 
+      const descriptor = (await this.recognitionService.extractDescriptor(
+        file.buffer,
+      )) as Prisma.JsonArray;
+
       return this.prismaService.photo.create({
         data: {
+          descriptor,
           key: uuid,
           url: configService.get('R2_PUBLIC_URL') + uuid,
           isMain,

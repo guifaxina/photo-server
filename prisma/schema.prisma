@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,60 +8,59 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  uuid      String   @unique @default(uuid()) @db.Uuid
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  role      Roles    @default(CUSTOMER)
-  Photo     Photo[]
-  cart      Cart?
-  orders    Order[]
-  location         String?
-  bio              String?
-  specialties      String[] @default([])
-  rating           Float?   @default(0.0)
-  reviewCount      Int?     @default(0)
-  portfolioCount   Int?     @default(0)
-  profileImage     String?
+  id             Int      @id @default(autoincrement())
+  uuid           String   @unique @default(uuid()) @db.Uuid
+  name           String
+  email          String   @unique
+  password       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  role           Roles    @default(CUSTOMER)
+  bio            String?
+  location       String?
+  portfolioCount Int?     @default(0)
+  profileImage   String?
+  rating         Float?   @default(0.0)
+  reviewCount    Int?     @default(0)
+  specialties    String[] @default([])
+  cart           Cart?
+  orders         Order[]
+  Photo          Photo[]
 
   @@map("users")
 }
 
 model Photo {
-  id             Int      @id @default(autoincrement())
-  uuid           String   @unique @default(uuid()) @db.Uuid
-  key            String
-  url            String
-  photographerId Int
-  description    String?
-  isMain         Boolean  @default(false)
-  mainPhotoId    Int?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  price          Decimal     @db.Decimal(10, 2)
-
-photographer     User    @relation(fields: [photographerId], references: [id])
-  mainPhoto        Photo?  @relation("relationMainPhoto", fields: [mainPhotoId], references: [id])
-  vinculatedPhotos Photo[] @relation("relationMainPhoto")
-
-  cartItems        CartItem[] 
+  id               Int         @id @default(autoincrement())
+  uuid             String      @unique @default(uuid()) @db.Uuid
+  key              String
+  url              String
+  description      String?
+  isMain           Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  photographerId   Int
+  mainPhotoId      Int?
+  price            Decimal     @db.Decimal(10, 2)
+  descriptor       Json?
+  cartItems        CartItem[]
   orderItems       OrderItem[]
+  mainPhoto        Photo?      @relation("relationMainPhoto", fields: [mainPhotoId], references: [id])
+  vinculatedPhotos Photo[]     @relation("relationMainPhoto")
+  photographer     User        @relation(fields: [photographerId], references: [id])
 
+  @@index([descriptor], name: "photo_descriptor_idx")
   @@map("photos")
 }
 
 model Cart {
-  id        Int      @id @default(autoincrement())
-  uuid      String   @unique @default(uuid()) @db.Uuid
-  userId    Int      @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user      User       @relation(fields: [userId], references: [id])
+  id        Int        @id @default(autoincrement())
+  uuid      String     @unique @default(uuid()) @db.Uuid
+  userId    Int        @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   items     CartItem[]
+  user      User       @relation(fields: [userId], references: [id])
 
   @@map("carts")
 }
@@ -80,7 +73,6 @@ model CartItem {
   priceAtAddition Decimal  @db.Decimal(10, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
   cart            Cart     @relation(fields: [cartId], references: [id])
   photo           Photo    @relation(fields: [photoId], references: [id])
 
@@ -98,9 +90,8 @@ model Order {
   paymentDetails       Json?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
-
-  user                 User        @relation(fields: [userId], references: [id])
   items                OrderItem[]
+  user                 User        @relation(fields: [userId], references: [id])
 
   @@map("orders")
 }
@@ -113,7 +104,6 @@ model OrderItem {
   priceAtPurchase Decimal  @db.Decimal(10, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
   order           Order    @relation(fields: [orderId], references: [id])
   photo           Photo    @relation(fields: [photoId], references: [id])
 
