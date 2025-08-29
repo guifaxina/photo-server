@@ -19,35 +19,12 @@ export class StorageService {
   ) {}
 
   async upload(
-    allFiles: { file: Express.Multer.File; isMain: boolean }[],
+    files: Express.Multer.File[],
     user: AuthUser,
     description?: string,
     price?: number,
   ) {
-    const mainPhoto = allFiles.find((obj) => obj.isMain);
-    if (!mainPhoto) {
-      throw new Error('Foto principal não encontrada');
-    }
-
-    const mainUploadPromises = await this.uploadPhotos(
-      [mainPhoto.file],
-      user,
-      true,
-    );
-    const [createdMainPhoto] = await Promise.all(mainUploadPromises);
-
-    const filesWithoutMain = allFiles
-      .filter((obj) => !obj.isMain)
-      .map((obj) => obj.file);
-
-    const uploads = await this.uploadPhotos(
-      filesWithoutMain,
-      user,
-      false,
-      createdMainPhoto.id,
-      description,
-      price,
-    );
+    const uploads = await this.uploadPhotos(files, user, description, price);
 
     await Promise.all(uploads);
   }
@@ -55,8 +32,6 @@ export class StorageService {
   async uploadPhotos(
     files: Express.Multer.File[],
     user: AuthUser,
-    isMain = false,
-    mainPhotoId?: number,
     description?: string,
     price?: number,
   ) {
@@ -82,14 +57,6 @@ export class StorageService {
           descriptor,
           key: uuid,
           url: configService.get('R2_PUBLIC_URL') + uuid,
-          isMain,
-          ...(mainPhotoId && {
-            mainPhoto: {
-              connect: {
-                id: mainPhotoId,
-              },
-            },
-          }),
           description,
           price: new Prisma.Decimal(price || 0.0),
           photographer: {

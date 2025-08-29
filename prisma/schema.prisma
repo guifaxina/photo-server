@@ -31,23 +31,20 @@ model User {
 }
 
 model Photo {
-  id               Int         @id @default(autoincrement())
-  uuid             String      @unique @default(uuid()) @db.Uuid
-  key              String
-  url              String
-  description      String?
-  isMain           Boolean     @default(false)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  photographerId   Int
-  mainPhotoId      Int?
-  price            Decimal     @db.Decimal(10, 2)
-  descriptor       Json?
-  cartItems        CartItem[]
-  orderItems       OrderItem[]
-  mainPhoto        Photo?      @relation("relationMainPhoto", fields: [mainPhotoId], references: [id])
-  vinculatedPhotos Photo[]     @relation("relationMainPhoto")
-  photographer     User        @relation(fields: [photographerId], references: [id])
+  id             Int         @id @default(autoincrement())
+  uuid           String      @unique @default(uuid()) @db.Uuid
+  key            String
+  url            String
+  description    String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  photographerId Int
+  mainPhotoId    Int?
+  price          Decimal     @db.Decimal(10, 2)
+  descriptor     Json?
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  photographer   User        @relation(fields: [photographerId], references: [id])
 
   @@index([descriptor], name: "photo_descriptor_idx")
   @@map("photos")

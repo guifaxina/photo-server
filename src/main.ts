@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from './exceptions/prisma-client-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 // Removido HttpAdapterHost, pois não é mais necessário para a forma como o filtro é aplicado
@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
+  const logger = new Logger('HTTP');
 
   app.setGlobalPrefix('api');
 
@@ -17,6 +18,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.use((req, res, next) => {
+    logger.log(`${req.method} ${req.originalUrl}`);
+    next();
+  });
 
   // Aplica o filtro de exceções do Prisma globalmente
   // Removido 'httpAdapter' pois o construtor do PrismaClientExceptionFilter não o espera
