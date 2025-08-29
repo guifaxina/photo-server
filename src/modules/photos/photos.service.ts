@@ -25,7 +25,6 @@ export class PhotosService {
     const photos = await this.prismaService.photo.findMany({
       where: {
         photographerId: photographer.id,
-        isMain: true,
       },
       select: {
         uuid: true,
@@ -87,9 +86,6 @@ export class PhotosService {
     }
 
     const photos = await this.prismaService.photo.findMany({
-      where: {
-        isMain: true,
-      },
       select: {
         uuid: true,
         url: true,

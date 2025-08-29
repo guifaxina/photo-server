@@ -33,9 +33,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   profile(@CurrentUser() user: AuthUser) {
-    this.logger.debug(
-      `UsersController: profile route hit for user: ${user.email}`,
-    );
     return user;
   }
 
