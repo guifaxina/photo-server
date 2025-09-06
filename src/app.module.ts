@@ -9,6 +9,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { CartModule } from './modules/cart/cart.module';
 import { PhotosModule } from './modules/photos/photos.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { FacialRecognitionModule } from './modules/facial-recognition/facial-recognition.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     CartModule,
     PhotosModule,
     PaymentsModule,
+    FacialRecognitionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

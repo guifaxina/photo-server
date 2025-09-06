@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { StorageService } from './storage.service';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { fileValidators } from 'src/validators/file-validators';
 import { CurrentUser } from 'src/decorators/user.decorator';
 import { AuthUser } from '../users/types';
@@ -29,36 +29,19 @@ export class StorageController {
   @Get('list')
   async list() {}
 
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'files' },
-      { name: 'fileMain', maxCount: 1 },
-    ]),
-  )
+  @UseInterceptors(FilesInterceptor('files'))
   @Post('upload')
   @Roles(UserRole.PHOTOGRAPHER)
   async upload(
     @CurrentUser() user: AuthUser,
     @UploadedFiles()
-    {
-      files = [],
-      fileMain = [],
-    }: { files?: Express.Multer.File[]; fileMain?: Express.Multer.File[] },
-    @Body(new ZodPipe(uploadPhotoSchema)) uploadPhotoDto: UploadPhotoDto,
+    files: Express.Multer.File[],
+    @Body(new ZodPipe(uploadPhotoSchema))
+    uploadPhotoDto: UploadPhotoDto,
   ) {
-    if (fileMain.length === 0 && files.length === 0) {
-      throw new BadRequestException(
-        'Pelo menos um arquivo de imagem deve ser enviado.',
-      );
-    }
-
-    if (fileMain.length > 1) {
-      throw new BadRequestException('Apenas um arquivo principal é permitido.');
-    }
-
     const filesPipe = new ParseFilePipe({ validators: fileValidators });
 
-    for (const file of [...files, ...fileMain]) {
+    for (const file of files) {
       try {
         await filesPipe.transform(file);
       } catch (error) {
@@ -66,14 +49,19 @@ export class StorageController {
       }
     }
 
-    return await this.storageService.upload(
-      [
-        ...files.map((file) => ({ file, isMain: false })),
-        ...fileMain.map((file) => ({ file, isMain: true })),
-      ],
-      user,
-      uploadPhotoDto.description,
-      uploadPhotoDto.price,
-    );
+    if (files.length !== uploadPhotoDto.prices.length) {
+      throw new BadRequestException(
+        'Número de arquivos não corresponde ao número de preços.',
+      );
+    }
+
+    const dataToUpload = files.map((file, i) => {
+      return {
+        file,
+        price: uploadPhotoDto.prices[i],
+      };
+    });
+
+    return await this.storageService.upload(dataToUpload, user);
   }
 }
