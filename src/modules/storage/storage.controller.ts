@@ -36,7 +36,8 @@ export class StorageController {
     @CurrentUser() user: AuthUser,
     @UploadedFiles()
     files: Express.Multer.File[],
-    @Body(new ZodPipe(uploadPhotoSchema)) uploadPhotoDto: UploadPhotoDto,
+    @Body(new ZodPipe(uploadPhotoSchema))
+    uploadPhotoDto: UploadPhotoDto,
   ) {
     const filesPipe = new ParseFilePipe({ validators: fileValidators });
 
@@ -48,11 +49,19 @@ export class StorageController {
       }
     }
 
-    return await this.storageService.upload(
-      files,
-      user,
-      uploadPhotoDto.description,
-      uploadPhotoDto.price,
-    );
+    if (files.length !== uploadPhotoDto.prices.length) {
+      throw new BadRequestException(
+        'Número de arquivos não corresponde ao número de preços.',
+      );
+    }
+
+    const dataToUpload = files.map((file, i) => {
+      return {
+        file,
+        price: uploadPhotoDto.prices[i],
+      };
+    });
+
+    return await this.storageService.upload(dataToUpload, user);
   }
 }
