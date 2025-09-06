@@ -9,6 +9,10 @@ import { S3_PROVIDER } from './s3.provider';
 import { Prisma } from '@prisma/client';
 import { FacialRecognitionService } from '../facial-recognition/facial-recognition.service';
 
+interface IUploadData {
+  file: Express.Multer.File;
+  price: number;
+}
 @Injectable()
 export class StorageService {
   constructor(
@@ -18,24 +22,14 @@ export class StorageService {
     private readonly recognitionService: FacialRecognitionService,
   ) {}
 
-  async upload(
-    files: Express.Multer.File[],
-    user: AuthUser,
-    description?: string,
-    price?: number,
-  ) {
-    const uploads = await this.uploadPhotos(files, user, description, price);
+  async upload(dataToUpload: IUploadData[], user: AuthUser) {
+    const uploads = await this.uploadPhotos(dataToUpload, user);
 
     await Promise.all(uploads);
   }
 
-  async uploadPhotos(
-    files: Express.Multer.File[],
-    user: AuthUser,
-    description?: string,
-    price?: number,
-  ) {
-    const uploads = files.map(async (file) => {
+  async uploadPhotos(dataToUpload: IUploadData[], user: AuthUser) {
+    const uploads = dataToUpload.map(async ({ file, price }) => {
       const uuid = randomUUID();
 
       await this.s3.send(
@@ -57,7 +51,6 @@ export class StorageService {
           descriptor,
           key: uuid,
           url: configService.get('R2_PUBLIC_URL') + uuid,
-          description,
           price: new Prisma.Decimal(price || 0.0),
           photographer: {
             connect: {

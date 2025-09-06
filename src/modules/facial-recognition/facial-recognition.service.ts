@@ -88,10 +88,20 @@ export class FacialRecognitionService {
       select: {
         url: true,
         descriptor: true,
+        uuid: true,
+        description: true,
+        price: true,
+        createdAt: true,
+        photographer: {
+          select: {
+            uuid: true,
+            name: true,
+          },
+        },
       },
     });
 
-    const urlMatches: string[] = [];
+    const urlMatches = [];
 
     for (const descriptor of descriptors) {
       const distance = faceapi.euclideanDistance(
@@ -100,7 +110,8 @@ export class FacialRecognitionService {
       );
 
       if (distance < threshold) {
-        urlMatches.push(descriptor.url);
+        const { descriptor: dscrpt, ...rest } = descriptor;
+        urlMatches.push(rest);
       }
     }
 
