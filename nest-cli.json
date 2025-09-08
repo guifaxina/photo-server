@@ -3,7 +3,11 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": false,
-    "assets": ["facial-recognition/models/**/*"]
+    "assets": [
+      {
+        "include": "assets/**/*",
+        "outDir": "dist/src"
+      }
+    ]
   }
 }
