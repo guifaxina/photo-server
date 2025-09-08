@@ -41,15 +41,15 @@ importers:
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
+      canvas:
+        specifier: ^3.1.2
+        version: 3.1.2
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
       class-validator:
         specifier: ^0.14.2
         version: 0.14.2
-      canvas:
-        specifier: ^3.1.2
-        version: 3.1.2
       face-api.js:
         specifier: ^0.22.2
         version: 0.22.2
@@ -1199,6 +1199,7 @@ packages:
 
   '@types/validator@13.15.2':
     resolution: {integrity: sha512-y7pa/oEJJ4iGYBxOpfAKn5b9+xuihvzDVnC/OSvlVnGxVg0pOqmjiMafiJ1KVNQEaPZf9HsEp5icEwGg8uIe5Q==}
+
   '@types/webgl-ext@0.0.30':
     resolution: {integrity: sha512-LKVgNmBxN0BbljJrVUwkxwRYqzsAEPcZOe6S2T6ZaBDIrFp0qu4FNlpc5sM1tGbXUYFgdVQIoeLk1Y1UoblyEg==}
 
@@ -5503,6 +5504,7 @@ snapshots:
   '@types/uuid@9.0.8': {}
 
   '@types/validator@13.15.2': {}
+
   '@types/webgl-ext@0.0.30': {}
 
   '@types/webgl2@0.0.4': {}

@@ -3,8 +3,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from './exceptions/prisma-client-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-// Removido HttpAdapterHost, pois não é mais necessário para a forma como o filtro é aplicado
-// import { HttpAdapterHost } from '@nestjs/core'; // Não é mais necessário
+import '@tensorflow/tfjs-node';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });

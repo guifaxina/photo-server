@@ -31,7 +31,7 @@ export class FacialRecognitionService {
   private async loadModels() {
     if (this.modelsLoaded) return;
 
-    const MODEL_URL = path.join(__dirname, 'models');
+    const MODEL_URL = path.join(process.cwd(), 'src', 'assets', 'models');
 
     await Promise.all([
       faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL),
